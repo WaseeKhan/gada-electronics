@@ -9,13 +9,13 @@ public interface UserService {
 
     UserDto createUser(UserDto userDto);
 
-    UserDto updateUser(String userId);
+    UserDto updateUser(UserDto userDto, String userId);
 
     void deleteUser(String userId);
 
     List<UserDto> getAllUser();
 
-    List<UserDto> getSingleUser(String userId);
+    UserDto getSingleUser(String userId);
 
     //Search
 
