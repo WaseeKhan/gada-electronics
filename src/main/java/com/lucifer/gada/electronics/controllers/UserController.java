@@ -2,6 +2,7 @@ package com.lucifer.gada.electronics.controllers;
 
 import com.lucifer.gada.electronics.dtos.UserDto;
 import com.lucifer.gada.electronics.entities.User;
+import com.lucifer.gada.electronics.payload.ApiResponseMessage;
 import com.lucifer.gada.electronics.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,19 +12,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/create-user")
+    @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
         UserDto user = userService.createUser(userDto);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
-    @PutMapping("/update-user/{userId}")
+    @PutMapping("/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable("userId") String userId,
             @RequestBody UserDto userDto
@@ -34,31 +35,36 @@ public class UserController {
 
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable String userId){
+    public ResponseEntity<ApiResponseMessage> deleteUser(@PathVariable String userId){
+
         userService.deleteUser(userId);
-        return new ResponseEntity<>("User deleted Succusfully!!", HttpStatus.OK);
+
+        ApiResponseMessage message = ApiResponseMessage.builder().message("User deleted Successfully!!").success(true).status(HttpStatus.OK).build();
+
+        return new ResponseEntity<>(message, HttpStatus.OK);
 
     }
 
+    @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers(){
         List<UserDto> allUser = userService.getAllUser();
         return new ResponseEntity<>(allUser, HttpStatus.OK);
     }
 
-    @PostMapping("{/userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getSingleUser(@PathVariable String userId){
         UserDto singleUser = userService.getSingleUser(userId);
         return new ResponseEntity<>(singleUser, HttpStatus.OK);
     }
 
-    @PostMapping("/email/{email}")
+    @GetMapping("/email/{email}")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email){
         UserDto userEmail = userService.getUserByEmail(email);
         return new ResponseEntity<>(userEmail, HttpStatus.OK);
     }
 
 
-    @PostMapping("/search/{keyword}")
+    @GetMapping("/search/{keyword}")
     public ResponseEntity<List<UserDto>> searchUser(@PathVariable String keyword){
         List<UserDto> searchResult = userService.searchUser(keyword);
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
