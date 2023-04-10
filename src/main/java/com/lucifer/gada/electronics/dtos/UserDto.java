@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -20,4 +21,5 @@ public class UserDto {
     private String gender;
     private String about;
     private String imageName;
+    private Date createdOn;
 }

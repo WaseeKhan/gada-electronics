@@ -2,12 +2,17 @@ package com.lucifer.gada.electronics.services.Impl;
 
 import com.lucifer.gada.electronics.dtos.UserDto;
 import com.lucifer.gada.electronics.entities.User;
+import com.lucifer.gada.electronics.helper.UserIdGenerator;
 import com.lucifer.gada.electronics.repositories.UserRepository;
 import com.lucifer.gada.electronics.services.UserService;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -20,17 +25,23 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private UserIdGenerator userIdGenerator;
     @Override
     public UserDto createUser(UserDto userDto) {
+
+
         //generate Unique ID
-        String userId = UUID.randomUUID().toString();
-        userDto.setUserId(userId);
+//        String userId = UUID.randomUUID().toString();
+//        String userId = userIdGenerator.generate().toString();
+//        userDto.setUserId(userId);
+        userDto.setCreatedOn(new Date());
         //dto->entity
         User user = dtoToEntity(userDto);
         User entityUser = userRepository.save(user);
-
         //entity->dto
         UserDto dtoUser = entityToDto(entityUser);
+
 
         return dtoUser;
     }

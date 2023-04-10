@@ -5,10 +5,12 @@ import com.lucifer.gada.electronics.entities.User;
 import com.lucifer.gada.electronics.payload.ApiResponseMessage;
 import com.lucifer.gada.electronics.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -19,7 +21,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto){
         UserDto user = userService.createUser(userDto);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
@@ -27,7 +29,7 @@ public class UserController {
     @PutMapping("/{userId}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable("userId") String userId,
-            @RequestBody UserDto userDto
+            @Valid @RequestBody UserDto userDto
             ){
         UserDto userDto1 = userService.updateUser(userDto, userId);
         return new ResponseEntity<>(userDto1, HttpStatus.OK);
