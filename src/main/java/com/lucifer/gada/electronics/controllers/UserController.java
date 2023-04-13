@@ -1,5 +1,6 @@
 package com.lucifer.gada.electronics.controllers;
 
+import com.lucifer.gada.electronics.dtos.PageableResponse;
 import com.lucifer.gada.electronics.dtos.UserDto;
 import com.lucifer.gada.electronics.entities.User;
 import com.lucifer.gada.electronics.payload.ApiResponseMessage;
@@ -48,8 +49,14 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers(){
-        List<UserDto> allUser = userService.getAllUser();
+    public ResponseEntity<PageableResponse<UserDto>> getAllUsers(
+            @RequestParam(value = "pageNo", defaultValue = "0") int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "5") int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "asc") String sortDir
+    ){
+
+        PageableResponse<UserDto> allUser = userService.getAllUser(pageNo, pageSize, sortBy, sortDir);
         return new ResponseEntity<>(allUser, HttpStatus.OK);
     }
 

@@ -1,5 +1,6 @@
 package com.lucifer.gada.electronics.services;
 
+import com.lucifer.gada.electronics.dtos.PageableResponse;
 import com.lucifer.gada.electronics.dtos.UserDto;
 import com.lucifer.gada.electronics.entities.User;
 
@@ -13,7 +14,7 @@ public interface UserService {
 
     void deleteUser(String userId);
 
-    List<UserDto> getAllUser();
+    PageableResponse<UserDto> getAllUser(int pageNo, int pageSize, String sortBy, String sortDir);
 
     UserDto getSingleUser(String userId);
 
