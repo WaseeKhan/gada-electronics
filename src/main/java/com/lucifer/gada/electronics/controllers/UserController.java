@@ -1,25 +1,44 @@
 package com.lucifer.gada.electronics.controllers;
 
+import com.lucifer.gada.electronics.dtos.ImageApiResponse;
 import com.lucifer.gada.electronics.dtos.PageableResponse;
 import com.lucifer.gada.electronics.dtos.UserDto;
 import com.lucifer.gada.electronics.entities.User;
 import com.lucifer.gada.electronics.payload.ApiResponseMessage;
+import com.lucifer.gada.electronics.services.FileService;
 import com.lucifer.gada.electronics.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
+    Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService userService;
+
+
+    @Autowired
+    private FileService fileService;
+
+    @Value("${user.profile.image.path}")
+    private String imageUploadPath="";
+
 
     @PostMapping
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto){
@@ -38,11 +57,15 @@ public class UserController {
 
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponseMessage> deleteUser(@PathVariable String userId){
+    public ResponseEntity<ApiResponseMessage> deleteUser(@PathVariable String userId) throws IOException {
 
         userService.deleteUser(userId);
 
+
+
         ApiResponseMessage message = ApiResponseMessage.builder().message("User deleted Successfully!!").success(true).status(HttpStatus.OK).build();
+
+
 
         return new ResponseEntity<>(message, HttpStatus.OK);
 
@@ -78,4 +101,27 @@ public class UserController {
         List<UserDto> searchResult = userService.searchUser(keyword);
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
+
+
+    @PostMapping("/image/{userId}")
+    public ResponseEntity<ImageApiResponse> uploadUserImage(
+            @RequestParam("userImage")MultipartFile image, @PathVariable String userId
+            ) throws IOException {
+        String imageName = fileService.uploadImage(image, imageUploadPath);
+        UserDto user = userService.getSingleUser(userId);
+        user.setImageName(imageName);
+        userService.updateUser(user, userId);
+        ImageApiResponse imageResponse = ImageApiResponse.builder().ImageName(imageName).success(true).path(imageUploadPath).ImageName(user.getImageName()).message("User Image uploaded successfully !!").status(HttpStatus.CREATED).build();
+        return new ResponseEntity<>(imageResponse, HttpStatus.CREATED);
+    }
+    @GetMapping("/image/{userId}")
+    public void serveUserImage(@PathVariable String userId, HttpServletResponse response) throws IOException {
+
+        UserDto user = userService.getSingleUser(userId );
+        logger.info("User Image Name {}", user.getImageName());
+        InputStream resource = fileService.getResource(imageUploadPath, user.getImageName());
+        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        StreamUtils.copy(resource, response.getOutputStream());
+    }
+
 }

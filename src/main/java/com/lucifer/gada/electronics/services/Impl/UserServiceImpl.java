@@ -10,13 +10,22 @@ import com.lucifer.gada.electronics.repositories.UserRepository;
 import com.lucifer.gada.electronics.services.UserService;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.modelmapper.ModelMapper;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -26,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
+    Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Autowired
     private UserRepository userRepository;
 
@@ -34,22 +44,24 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserIdGenerator userIdGenerator;
+
+    @Value("${user.profile.image.path}")
+    private String imagePath;
+
     @Override
     public UserDto createUser(UserDto userDto) {
 
 
         //generate Unique ID
-//        String userId = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
 //        String userId = userIdGenerator.generate().toString();
-//        userDto.setUserId(userId);
+        userDto.setUserId(userId);
         userDto.setCreatedOn(new Date());
         //dto->entity
         User user = dtoToEntity(userDto);
         User entityUser = userRepository.save(user);
         //entity->dto
         UserDto dtoUser = entityToDto(entityUser);
-
-
         return dtoUser;
     }
 
@@ -69,8 +81,23 @@ public class UserServiceImpl implements UserService {
         return updatedDto;
     }
     @Override
-    public void deleteUser(String userId) {
+    public void deleteUser(String userId) throws IOException {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        //delete user Image When User delete
+
+
+        String fullPath = imagePath + user.getImageName();//will get sample.png
+        logger.info("fullPath:{}", fullPath);
+        try{
+            Path path = Paths.get(fullPath);
+            Files.delete(path);
+        }catch (NoSuchFileException ex){
+
+            logger.info("User Image not found in folder");
+            ex.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
         userRepository.delete(user);
 
     }
@@ -79,7 +106,7 @@ public class UserServiceImpl implements UserService {
     public PageableResponse<UserDto> getAllUser(int pageNo, int pageSize, String sortBy, String sortDir) {
 
         Sort sort = (sortDir.equalsIgnoreCase("desc")) ? (Sort.by(sortBy).descending()) : (Sort.by(sortBy).ascending());
-        Pageable pageable = PageRequest.of(pageNo-1, pageSize, sort);
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
         Page<User> page = userRepository.findAll(pageable);
 

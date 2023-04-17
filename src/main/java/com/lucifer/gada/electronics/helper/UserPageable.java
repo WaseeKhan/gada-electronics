@@ -19,7 +19,7 @@ public class UserPageable {
         List<V> dtoList = entity.stream().map(object -> new ModelMapper().map(object,type)).collect(Collectors.toList());
         PageableResponse<V> response = new PageableResponse<>();
         response.setContent(dtoList);
-        response.setPageNo(page.getNumber()+1);
+        response.setPageNo(page.getNumber());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
         response.setLastPage(page.isLast());

@@ -35,7 +35,7 @@ public class User {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String userId;
 
     @Size(min = 3, max=20, message = "Invalid Name")
